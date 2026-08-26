@@ -1,0 +1,134 @@
+---
+title: "Response Format: Envelopes, Meta, and Time Handling"
+sidebarTitle: "Response Format"
+description: "Learn how the Voltpath API structures every response, from the meta envelope and UTC time resolution to data flags and validation error format."
+---
+
+Every Voltpath API response follows the same envelope shape: a `meta` object that describes provenance, time range, and resolution, plus a `data` array containing the endpoint-specific payload rows. Understanding this envelope helps you verify what the server resolved and how the data was produced.
+
+## The envelope
+
+A typical response looks like this:
+
+```json
+{
+  "meta": {
+    "provenance": "derived",
+    "resolution": "1H",
+    "resolved_datetime_from": "2025-04-01T00:00:00",
+    "resolved_datetime_to": "2025-05-01T00:00:00",
+    "upstream_sources": ["ENTSO-E Transparency Platform"]
+  },
+  "data": [
+    {
+      "datetime": "2025-04-01T00:00:00",
+      "bidding_zone": "DE",
+      "price_mwh": 45.2,
+      "interpolated": false,
+      "year": 2025
+    }
+  ]
+}
+```
+
+<ResponseField name="provenance" type="string" required>
+  Whether the data is directly measured or computed:
+
+  - `measured` - raw data from upstream sources such as ENTSO-E
+  - `derived` - computed from other signals, such as flows calculated from prices and scheduled exchanges
+</ResponseField>
+
+<ResponseField name="resolution" type="string | null">
+  The applied aggregation resolution. Examples: `1H`, `1D`, `1W`, or `null` when native (raw) data is returned.
+</ResponseField>
+
+<ResponseField name="resolved_datetime_from" type="datetime | null">
+  The UTC start datetime the server actually used after resolving relative shortcuts.
+</ResponseField>
+
+<ResponseField name="resolved_datetime_to" type="datetime | null">
+  The UTC end datetime the server actually used after resolving relative shortcuts.
+</ResponseField>
+
+<ResponseField name="upstream_sources" type="string[] | null">
+  A list of upstream data sources, for example `["ENTSO-E Transparency Platform"]`.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  The payload rows. The exact schema varies by endpoint.
+</ResponseField>
+
+## Datetime parameters
+
+You can specify time ranges using either absolute ISO 8601 datetimes or relative shorthand.
+
+**Absolute format:**
+
+```text
+2025-01-15T12:30:00
+```
+
+**Relative shorthand:**
+
+- `now` - current UTC time
+- `now-30d` - 30 days ago
+- `now-7d` - 7 days ago
+- `now-1H` - 1 hour ago
+- `now-15m` - 15 minutes ago
+
+All datetimes are resolved to UTC. When you use relative shorthand, the exact boundaries depend on when the server processes the request. Always check `resolved_datetime_from` and `resolved_datetime_to` in the response meta to confirm the actual range used.
+
+## Resolution
+
+The `resolution` query parameter controls how data is aggregated. Available options:
+
+- `auto` (default) - the server selects a resolution based on the width of the date range. Recommended for most use cases.
+- `native` - returns raw data regardless of range. Use with caution on wide date ranges, as responses can become very large.
+- `1H` - hourly aggregation
+- `1D` - daily aggregation
+- `1W` - weekly aggregation
+
+<Note>
+  Resolution is not available on `/api/v1/flow-duration` and `/api/v1/zone-import-export`.
+</Note>
+
+## Interpolated flag
+
+Some rows include an `interpolated` or `flow_interpolated` boolean. When this flag is `true`, the value was estimated to fill a gap in the upstream data rather than directly observed.
+
+- **PriceRow:** `interpolated` indicates a gap-filled price
+- **FlowTypeRow:** `flow_interpolated` indicates a gap-filled flow
+
+When building analytics or trading models, consider treating interpolated values with appropriate caution, since they are modeled rather than measured.
+
+## Error responses
+
+When query parameters fail validation, the API returns a `422 Validation Error` with a standard error body.
+
+### Example 422 response
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["query", "resolution"],
+      "msg": "Input should be 'auto', 'native', '1H', '1D' or '1W'",
+      "type": "enum"
+    }
+  ]
+}
+```
+
+The `detail` array contains one or more error objects with the following fields:
+
+<ResponseField name="loc" type="array" required>
+  The location of the invalid input, typically `["query", "<parameter_name>"]`.
+</ResponseField>
+
+<ResponseField name="msg" type="string" required>
+  A human-readable description of what went wrong.
+</ResponseField>
+
+<ResponseField name="type" type="string" required>
+  The error type classification, for example `enum` for invalid enum values.
+</ResponseField>

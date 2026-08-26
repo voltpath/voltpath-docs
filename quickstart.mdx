@@ -1,47 +1,87 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Quickstart: Your First Voltpath API Request"
+description: "Learn how to fetch day-ahead electricity prices from the Voltpath API for a single bidding zone in under five minutes."
+sidebarTitle: "Quickstart"
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+This guide walks you through making your first request to the Voltpath API. In a few minutes, you will retrieve day-ahead electricity prices for Germany for the past seven days and understand how the API structures its responses.
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Choose your base URL">
+    The Voltpath API is hosted at the following base URL. No API key or authentication is required based on the current specification.
 
-    ```bash
-    npm install your-package
+    ```text
+    https://api.voltpath.ai
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="Fetch day-ahead prices">
+    Send a GET request to `/api/v1/prices` with query parameters to filter by bidding zone, time range, and resolution.
 
-    ```bash
-    your-cli init
+    <CodeGroup>
+
+    ```bash cURL
+    curl 'https://api.voltpath.ai/api/v1/prices?zone=DE&datetime_from=now-7d&datetime_to=now&resolution=1D'
     ```
+
+    ```python Python
+    import httpx
+    
+    resp = httpx.get(
+        'https://api.voltpath.ai/api/v1/prices',
+        params={
+            'zone': 'DE',
+            'datetime_from': 'now-7d',
+            'datetime_to': 'now',
+            'resolution': '1D'
+        }
+    )
+    print(resp.json())
+    ```
+
+    </CodeGroup>
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+  <Step title="Read the response">
+    All Voltpath endpoints return data inside a standard envelope. The `meta` object contains provenance information, the resolved time range, and upstream data sources. The `data` array holds the result rows.
+
+    ```json
+    {
+      "meta": {
+        "provenance": "measured",
+        "resolution": "1D",
+        "resolved_datetime_from": "2026-08-19T00:00:00",
+        "resolved_datetime_to": "2026-08-26T00:00:00",
+        "upstream_sources": ["ENTSO-E Transparency Platform"]
+      },
+      "data": [
+        {"datetime": "2026-08-19T00:00:00", "bidding_zone": "DE", "price_mwh": 82.45, "interpolated": false, "year": 2026},
+        {"datetime": "2026-08-20T00:00:00", "bidding_zone": "DE", "price_mwh": 79.10, "interpolated": false, "year": 2026}
+      ]
+    }
+    ```
+
+    Each row in the `data` array is a `PriceRow` containing the timestamp, bidding zone code, day-ahead price in EUR per MWh (`price_mwh`), an interpolation flag, and the year.
+  </Step>
+  <Step title="Filter by multiple zones">
+    To retrieve data for more than one bidding zone, repeat the `zone` query parameter for each code.
 
     ```bash
-    your-cli start
+    curl 'https://api.voltpath.ai/api/v1/prices?zone=DE&zone=FR&datetime_from=now-7d&datetime_to=now&resolution=1D'
     ```
   </Step>
 </Steps>
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  Use `resolution=auto` (the default) and let the server select the most appropriate granularity for your requested time range.
 </Tip>
+
+## Next steps
+
+<CardGroup>
+  <Card title="Bidding zones" icon="map" href="/concepts/bidding-zones">
+    Learn how European bidding zones work and how to use zone codes in your queries.
+  </Card>
+
+  <Card title="API reference" icon="code" href="/api-reference/introduction">
+    Explore all available endpoints, parameters, and response schemas.
+  </Card>
+</CardGroup>

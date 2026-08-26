@@ -1,0 +1,49 @@
+---
+title: "Bidding Zones: European Electricity Market Areas"
+sidebarTitle: "Bidding Zones"
+description: "Learn how European bidding zones represent geographic market areas in ENTSO-E day-ahead pricing and how to filter Voltpath data by zone code."
+---
+
+European electricity markets are divided into bidding zones, geographic areas where electricity trades at a single price in the day-ahead market. These zones are defined by ENTSO-E, the European Network of Transmission System Operators for Electricity. The Voltpath API uses standard zone codes to identify each bidding zone so you can query prices, flows, and other data for the regions that matter to your analysis.
+
+## Zone codes
+
+Zone codes are short uppercase strings that identify bidding zones. Common examples include:
+
+| Code | Market area |
+| --- | --- |
+| `DE` | Germany |
+| `FR` | France |
+| `NO2` | Norway price area 2 |
+| `SE1` | Sweden price area 1 |
+| `SE2` | Sweden price area 2 |
+| `DK1` | Denmark price area 1 |
+| `DK2` | Denmark price area 2 |
+
+Pass one or more zone codes in the `zone` query parameter on most endpoints to filter results. For example, `?zone=DE&zone=FR` returns data only for Germany and France. Omit the `zone` parameter to receive data for all available zones.
+
+## Borders
+
+A border is a pair of adjacent bidding zones that can exchange power. Voltpath represents borders as a string in the format `ZONE_FROM->ZONE_TO`. For example, `DE->FR` represents the border between Germany and France.
+
+The reference direction matters: a positive `net_flow_mw` means power flows from `ZONE_FROM` to `ZONE_TO`. A negative value means the flow is in the opposite direction.
+
+Filter by one or more borders using the `border` query parameter on supported endpoints (for example, `?border=DE->FR&border=FR->ES`).
+
+## Zone vs border filtering
+
+Some endpoints describe the behavior of an entire zone, while others describe flows across a specific border.
+
+- **Zone-level endpoints** report aggregated values such as net import or export for the whole zone, or the share of counter-intuitive flows within a zone.
+- **Border-level endpoints** report flows and flow-type summaries between two specific zones.
+
+Some endpoints support both `zone` and `border` parameters. Use `zone` when your analysis centers on a market area, and `border` when you care about a specific interconnector.
+
+<Note>
+  Zone codes follow ENTSO-E naming conventions. Multi-area countries such as Norway and Sweden use numbered price areas (for example, NO1 through NO5) because those countries have multiple bidding zones.
+</Note>
+
+## Next steps
+
+- Read about [flow types](/concepts/flow-types) to understand how Voltpath classifies power flows across borders.
+- Visit the [API reference](/api-reference/introduction) for full endpoint details and parameter documentation.

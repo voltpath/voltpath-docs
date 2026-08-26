@@ -1,0 +1,63 @@
+---
+title: "Flow Types: How Voltpath Classifies Cross-Border Flows"
+sidebarTitle: "Flow Types"
+description: "Learn how Voltpath classifies cross-border electricity flows into four types using the relationship between flow direction and price gradients between bidding zones."
+---
+
+Voltpath classifies each hourly cross-border flow observation into one of four types based on the relationship between power flow direction and the price gradient between the two zones. Understanding these classifications helps you identify market efficiency, physical constraints, and anomalies in European electricity trading.
+
+## The four flow types
+
+<Accordion title="convergence">
+  Power flows from the higher-price zone to the lower-price zone, reducing the price spread. This is the expected economic behavior : electricity moves toward price equilibrium.
+</Accordion>
+
+<Accordion title="congestion">
+  Power would flow toward price equilibrium but the interconnector is at its physical capacity limit (NTC), preventing further equalization. The price spread persists.
+</Accordion>
+
+<Accordion title="counter_intuitive">
+  Power flows from the lower-price zone to the higher-price zone, opposite to what price signals suggest. This often occurs due to loop flows, scheduled exchanges, or market coupling artifacts.
+</Accordion>
+
+<Accordion title="outage">
+  The border was unavailable due to a planned or unplanned outage of the interconnector during the period.
+</Accordion>
+
+## Flow type in API responses
+
+The `flow_type` field in a [`FlowTypeRow`](/api-reference/introduction) contains one of these four strings for each hourly observation. To see aggregated daily breakdowns, use [`BorderFlowSummaryRow`](/api-reference/introduction) which returns the percentage of hours in a day that fall into each category:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `day` | date | The calendar day of the summary |
+| `bidding_zone_from` | string | Origin bidding zone code |
+| `bidding_zone_to` | string | Destination bidding zone code |
+| `convergence` | number | Percentage of hours with convergent flows |
+| `congestion` | number | Percentage of hours with congested flows |
+| `counter_intuitive` | number | Percentage of hours with counter-intuitive flows |
+| `outage` | number | Percentage of hours with border outages |
+
+These four percentages sum to approximately 100% for each daily border pair.
+
+For a zone-level view of counter-intuitive behavior, the [`ZoneCiShareRow`](/api-reference/introduction) provides:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `day` | date | The calendar day |
+| `zone` | string | Bidding zone code |
+| `ci_hours` | int | Hours with counter-intuitive flows originating from this zone |
+| `total_hours` | int | Total hours assessed |
+| `ci_percentage` | number | Share of hours that were counter-intuitive |
+
+<Tip>
+  Use `GET /api/v1/ci-share` to monitor which zones experience the most counter-intuitive flows over a given period. This endpoint is useful for identifying persistent market coupling anomalies or zones heavily affected by loop flows.
+</Tip>
+
+## Related endpoints
+
+- [`GET /api/v1/flows`](/api-reference/introduction) : raw hourly flow classifications
+- [`GET /api/v1/flow-type-summary`](/api-reference/introduction) : daily border-level percentage breakdowns
+- [`GET /api/v1/ci-share`](/api-reference/introduction) : daily zone-level counter-intuitive share
+
+For a hands-on introduction to fetching this data, see the [Quickstart](/quickstart) guide or browse the full [API Reference](/api-reference/introduction).
