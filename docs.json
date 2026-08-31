@@ -3,9 +3,22 @@
   "theme": "luma",
   "name": "Voltpath API",
   "colors": {
-    "primary": "#2563EB",
-    "light": "#60A5FA",
-    "dark": "#1D4ED8"
+    "primary": "#10B981",
+    "light": "#34D399",
+    "dark": "#064E3B"
+  },
+  "background": {
+    "color": {
+      "light": "#000000",
+      "dark": "#000000"
+    }
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": true
+  },
+  "fonts": {
+    "family": "Geist Mono"
   },
   "favicon": "/favicon.svg",
   "navigation": {
