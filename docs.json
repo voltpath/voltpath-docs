@@ -15,7 +15,7 @@
   },
   "appearance": {
     "default": "dark",
-    "strict": true
+    "strict": false
   },
   "fonts": {
     "family": "Geist Mono"
@@ -64,7 +64,12 @@
         "label": "Support",
         "href": "mailto:support@voltpath.ai"
       }
-    ]
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://voltpath.ai/dashboard"
+    }
   },
   "footer": {
     "socials": {
