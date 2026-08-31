@@ -2,3 +2,9 @@
 #navbar {
   border-bottom: 1px solid #064e3b;
 }
+
+/* Body/prose text (--gray-400) reads too faint on true black (#000) --
+   promote it to the next token up (--gray-300's value) for readable contrast */
+:root {
+  --gray-400: 206 211 209;
+}
