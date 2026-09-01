@@ -3,46 +3,52 @@
   "theme": "luma",
   "name": "Voltpath API",
   "colors": {
-    "primary": "#2563EB",
-    "light": "#60A5FA",
-    "dark": "#1D4ED8"
+    "primary": "#10B981",
+    "light": "#34D399",
+    "dark": "#064E3B"
+  },
+  "background": {
+    "color": {
+      "light": "#FFFFFF",
+      "dark": "#000000"
+    }
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": false
+  },
+  "fonts": {
+    "family": "Geist Mono"
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "Documentation",
-        "groups": [
-          {
-            "group": "Get Started",
-            "pages": [
-              "index",
-              "quickstart"
-            ]
-          },
-          {
-            "group": "Core Concepts",
-            "pages": [
-              "concepts/bidding-zones",
-              "concepts/flow-types",
-              "concepts/response-format"
-            ]
-          }
+        "group": "Get Started",
+        "pages": [
+          "index"
         ]
       },
       {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoints",
-            "openapi": "https://api.voltpath.ai/openapi.json"
-          }
+        "group": "Core Concepts",
+        "pages": [
+          "concepts/bidding-zones",
+          "concepts/flow-types",
+          "concepts/response-format"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "openapi": "https://api.voltpath.ai/openapi.json",
+        "pages": [
+          "api-reference/introduction",
+          "GET /api/v1/prices",
+          "GET /api/v1/flows",
+          "GET /api/v1/flow-type-summary",
+          "GET /api/v1/ci-share",
+          "GET /api/v1/flow-duration",
+          "GET /api/v1/flow-price-scatter",
+          "GET /api/v1/zone-import-export"
         ]
       }
     ]
@@ -52,12 +58,12 @@
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:support@voltpath.ai"
-      }
-    ]
+    "links": [],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://voltpath.ai/dashboard"
+    }
   },
   "footer": {
     "socials": {

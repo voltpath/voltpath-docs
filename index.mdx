@@ -1,41 +1,37 @@
 ---
-title: "Voltpath API: European Electricity Flow and Price Data"
-description: "Voltpath delivers European day-ahead electricity prices and derived power flow data across ENTSO-E bidding zones via a fast, modern REST API."
+title: "VoltPath API"
 sidebarTitle: "Introduction"
+description: "Voltpath delivers European day-ahead electricity prices and derived power flow data across ENTSO-E bidding zones via a fast, modern REST API."
 ---
 
-Voltpath provides electricity flow and day-ahead price data across European bidding zones. The REST API is built on FastAPI and sources price data from ENTSO-E, returning derived power flow computations together with rich metadata. This documentation will help you make your first request, understand core concepts, and integrate the seven primary data endpoints into your own applications.
-
-<CardGroup cols={2}>
-  <Card title="Make your first API call" icon="rocket" href="/quickstart">
-    Get up and running with a working request in minutes.
-  </Card>
-
-  <Card title="Bidding zones explained" icon="map" href="/concepts/bidding-zones">
-    Learn how European bidding zones work and how to filter by zone code.
-  </Card>
-
-  <Card title="API reference overview" icon="code" href="/api-reference/introduction">
-    Explore endpoints, parameters, and response envelopes.
-  </Card>
-
-  <Card title="Flow type classification" icon="bolt" href="/concepts/flow-types">
-    Understand convergence, congestion, counter-intuitive, and outage flows.
-  </Card>
-</CardGroup>
+VoltPath gives you programmatic access to European electricity market data: cross-border power flows, day-ahead prices, and the derived metrics built on top of them. Every endpoint is an HTTP GET that returns JSON, ready to drop into a dashboard, analytics pipeline, or trading model.
 
 ## What you can query
 
-The Voltpath API exposes seven GET endpoints under `/api/v1/`:
+- **Prices** — day-ahead electricity prices per bidding zone
+- **Flows** — cross-border power flows, classified by type (convergence, congestion, counter-intuitive, outage)
+- **CI share** — how often flows run counter to price signals, by zone or border
+- **Import / export** — net energy moved in and out of each zone
 
-- **Prices** (`/api/v1/prices`): Day-ahead electricity prices per bidding zone, sourced from ENTSO-E.
-- **Flows** (`/api/v1/flows`): Derived power flows computed from prices and scheduled exchanges.
-- **Flow type summary** (`/api/v1/flow-type-summary`): Daily percentage breakdown of flow types per border.
-- **Flow duration** (`/api/v1/flow-duration`): Flow duration curve data for analyzing flow distributions over time.
-- **Flow vs price scatter** (`/api/v1/flow-price-scatter`): Correlation scatter data linking net flow to price delta.
-- **Counter-intuitive share** (`/api/v1/ci-share`): Daily counter-intuitive flow share per zone in hours and percentage.
-- **Zone import / export** (`/api/v1/zone-import-export`): Aggregated net import and export totals per zone in GWh.
+See [Bidding Zones](/concepts/bidding-zones) for zone codes and [Flow Types](/concepts/flow-types) for how classification works.
 
-<Note>
-  All timestamps are returned in UTC. The `datetime_from` and `datetime_to` query parameters accept ISO 8601 values or relative shorthand such as `now`, `now-30d`, `now-1H`, and `now-15m`. The response `meta` object includes `resolved_datetime_from` and `resolved_datetime_to` so you always know the exact interval that was queried.
-</Note>
+## Quickstart
+
+```bash
+curl 'https://api.voltpath.ai/api/v1/prices?zone=DE&datetime_from=now-7d&datetime_to=now&resolution=1D'
+```
+
+Every response shares one envelope shape:
+
+```json
+{
+  "meta": { "resolution": "1D", "resolved_datetime_from": "...", "resolved_datetime_to": "..." },
+  "data": [{ "datetime": "2026-08-19T00:00:00", "bidding_zone": "DE", "price_mwh": 82.45 }]
+}
+```
+
+See [Response Format](/concepts/response-format) for the full spec, or the [API Reference](/api-reference/introduction) for every endpoint.
+
+## Authentication
+
+Send your API key in the `x-api-key` header on every request. Generate one at [voltpath.ai/settings](https://voltpath.ai/settings).

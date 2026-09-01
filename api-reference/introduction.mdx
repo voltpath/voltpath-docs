@@ -1,59 +1,32 @@
 ---
-title: "Voltpath API Reference: Electricity Data Endpoints"
+title: "VoltPath API"
 sidebarTitle: "Overview"
-description: "Explore the Voltpath API base URL, versioning, and available endpoints for European electricity flow and day-ahead price data."
+description: "Read-only REST API for European electricity flow and day-ahead price data, sourced from ENTSO-E."
 ---
 
-The Voltpath API provides read-only access to European electricity flow and day-ahead price data sourced from ENTSO-E. All endpoints are HTTP GET and return JSON, making them easy to integrate into dashboards, analytics pipelines, or trading tools.
+VoltPath gives you programmatic access to European electricity market data: cross-border power flows, day-ahead prices, and the derived metrics built on top of them. Every endpoint is an HTTP GET that returns JSON, ready to drop into a dashboard, analytics pipeline, or trading model.
+
+## What you can query
+
+- **Prices** — day-ahead electricity prices per bidding zone
+- **Flows** — cross-border power flows, classified by type (convergence, congestion, counter-intuitive, outage)
+- **CI share** — how often flows run counter to price signals, by zone or border
+- **Import / export** — net energy moved in and out of each zone
+
+Browse the sidebar for the full endpoint list, or see [Flow Types](/concepts/flow-types) for how classification works.
 
 ## Base URL
 
 ```text
-https://api.voltpath.ai
+https://api.voltpath.ai/api/v1
 ```
 
-All API endpoints are located under the `/api/v1/` path. For example, the prices endpoint is accessible at `https://api.voltpath.ai/api/v1/prices`.
+Current version is **v1**; future breaking changes ship under `/api/v2`.
 
 ## Authentication
 
-No authentication is required for the current API version. You can query all endpoints without an API key or token.
-
-## Versioning
-
-The current API version is **v1**, reflected in the URL path `/api/v1/`. Future versions will be introduced under a new path prefix (for example, `/api/v2/`). We recommend pinning integrations to a specific version.
-
-## Endpoints
-
-| Endpoint | Method | Description |
-| --- | --- | --- |
-| `/api/v1/prices` | GET | Day-ahead electricity prices per bidding zone |
-| `/api/v1/flows` | GET | Derived power flows with flow type classification |
-| `/api/v1/flow-type-summary` | GET | Daily flow type percentage breakdown per border |
-| `/api/v1/flow-duration` | GET | Flow duration curve by border or zone |
-| `/api/v1/flow-price-scatter` | GET | Flow vs. price correlation scatter data |
-| `/api/v1/ci-share` | GET | Counter-intuitive flow share per zone (daily) |
-| `/api/v1/zone-import-export` | GET | Net import/export energy (GWh) per zone |
-
-## Common parameters
-
-Most endpoints share a set of query parameters for filtering and aggregation:
-
-- **`datetime_from`** and **`datetime_to`** — Filter the time range. Accept ISO 8601 timestamps or relative shorthand such as `now`, `now-30d`, `now-1H`, and `now-15m`. All values are interpreted as UTC. Defaults to `now-30d` to `now`. The response `meta` includes the resolved timestamps.
-- **`zone`** — Filter by bidding zone code (for example, `DE`, `FR`, `NO2`). Repeat the parameter to select multiple zones. Omit to return all zones. See [Bidding Zones](/concepts/bidding-zones) for supported codes.
-- **`border`** — Filter by border pair in the format `ZONE_FROM->ZONE_TO`, for example `DE->FR`. Not available on `/prices`, `/ci-share`, or `/zone-import-export`.
-- **`resolution`** — Control time aggregation: `auto`, `native`, `1H`, `1D`, or `1W`. Defaults to `auto`. Use `native` to request unprocessed data. Not available on `/flow-duration` or `/zone-import-export`.
-
-For full details on datetime formats and resolution behavior, see [Response Format](/concepts/response-format).
-
-## Data provenance
-
-Every response includes a `meta.provenance` field that indicates the origin of the data:
-
-- `measured` — Raw data from upstream ENTSO-E sources.
-- `derived` — Computed metrics such as flow classifications, correlations, and aggregations.
-
-Additional `meta` fields include `resolution`, `resolved_datetime_from`, `resolved_datetime_to`, and `upstream_sources`.
+Send your API key in the `x-api-key` header on every request. Generate one at [voltpath.ai/settings](https://voltpath.ai/settings).
 
 <Note>
-  Use the sidebar to navigate to individual endpoint pages. An interactive API playground lets you try every endpoint directly from this reference.
+  Every response shares one envelope shape (`meta` + `data`) — see [Response Format](/concepts/response-format) for the full spec, including datetime parameters and error responses.
 </Note>
