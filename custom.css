@@ -3,6 +3,40 @@
   border-bottom: 1px solid #064e3b;
 }
 
+/* Navbar CTA - landing page uses bordered "[ label ]" buttons, not filled pills */
+#navbar a[href="https://voltpath.ai/dashboard"] {
+  background: transparent;
+  border: 1px solid #10b981;
+  border-radius: 0;
+}
+#navbar a[href="https://voltpath.ai/dashboard"]:hover {
+  background: rgba(16, 185, 129, 0.1);
+  opacity: 1;
+}
+#navbar a[href="https://voltpath.ai/dashboard"] span {
+  color: #34d399 !important;
+}
+#navbar a[href="https://voltpath.ai/dashboard"] div::before {
+  content: '[ ';
+}
+#navbar a[href="https://voltpath.ai/dashboard"] div::after {
+  content: ' ]';
+}
+
+/* API reference "Try it" button - same bordered chrome, not a filled pill */
+.tryit-button {
+  background: transparent !important;
+  border: 1px solid #10b981;
+  border-radius: 0.25rem;
+  color: #34d399 !important;
+}
+.tryit-button:hover {
+  background: rgba(16, 185, 129, 0.1) !important;
+}
+.tryit-button .icon {
+  background-color: #34d399 !important;
+}
+
 /* Body/prose text (--gray-400) reads too faint on true black (#000) --
    promote it to the next token up (--gray-300's value) for readable contrast */
 :root {
