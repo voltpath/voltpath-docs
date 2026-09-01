@@ -9,7 +9,7 @@
   },
   "background": {
     "color": {
-      "light": "#000000",
+      "light": "#FFFFFF",
       "dark": "#000000"
     }
   },
@@ -58,12 +58,7 @@
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:support@voltpath.ai"
-      }
-    ],
+    "links": [],
     "primary": {
       "type": "button",
       "label": "Dashboard",

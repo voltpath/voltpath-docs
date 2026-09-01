@@ -25,7 +25,7 @@ Current version is **v1**; future breaking changes ship under `/api/v2`.
 
 ## Authentication
 
-None required. Query any endpoint without an API key or token.
+Send your API key in the `x-api-key` header on every request. Generate one at [voltpath.ai/settings](https://voltpath.ai/settings).
 
 <Note>
   Every response shares one envelope shape (`meta` + `data`) — see [Response Format](/concepts/response-format) for the full spec, including datetime parameters and error responses.
