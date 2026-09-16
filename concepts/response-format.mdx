@@ -39,7 +39,7 @@ A typical response looks like this:
 </ResponseField>
 
 <ResponseField name="resolution" type="string | null">
-  The applied aggregation resolution. Examples: `1H`, `1D`, `1W`, or `null` when native (raw) data is returned.
+  The applied aggregation resolution: `native`, `1H`, `1D`, or `1W`. `null` only on endpoints that don't accept a `resolution` parameter at all (`/flow-duration`, `/price-kpis`, `/zone-import-export`) — it is never `null` for `native` data, which reports the literal string `"native"`.
 </ResponseField>
 
 <ResponseField name="resolved_datetime_from" type="datetime | null">
@@ -52,6 +52,10 @@ A typical response looks like this:
 
 <ResponseField name="upstream_sources" type="string[] | null">
   A list of upstream data sources, for example `["ENTSO-E Transparency Platform"]`.
+</ResponseField>
+
+<ResponseField name="pagination" type="object | null">
+  Present only on `/flows`; `null` on every other endpoint. See Pagination below.
 </ResponseField>
 
 <ResponseField name="data" type="array">
@@ -83,14 +87,41 @@ All datetimes are resolved to UTC. When you use relative shorthand, the exact bo
 The `resolution` query parameter controls how data is aggregated. Available options:
 
 - `auto` (default) - the server selects a resolution based on the width of the date range. Recommended for most use cases.
-- `native` - returns raw data regardless of range. Use with caution on wide date ranges, as responses can become very large.
-- `1H` - hourly aggregation
+- `native` - raw data. Capped to a **2-day** range: a wider explicit `native` request returns `422` instead of running.
+- `1H` - hourly aggregation. Capped to a **14-day** range for the same reason; wider explicit `1H` requests also return `422`.
 - `1D` - daily aggregation
 - `1W` - weekly aggregation
 
+The caps on `native` and `1H` only apply when you set them explicitly. `auto` is the escape hatch for wider ranges — it downgrades resolution as the range widens (`native` up to 2 days, `1H` up to 14 days, `1D` up to 90 days, `1W` beyond that) instead of failing, so it never needs a cap of its own.
+
 <Note>
-  Resolution is not available on `/api/v1/flow-duration` and `/api/v1/zone-import-export`.
+  Resolution is not available on `/api/v1/flow-duration`, `/api/v1/price-kpis`, and `/api/v1/zone-import-export`.
 </Note>
+
+## Pagination
+
+`GET /api/v1/flows` accepts `limit` (1–20,000, default 20,000) and `offset` (default 0). Rows are ordered by `(datetime, bidding_zone_from, bidding_zone_to, flow_type)` before slicing, so page boundaries are stable across requests. `meta.pagination` reports the unsliced row count:
+
+```json
+{
+  "meta": {
+    "pagination": { "total": 58851, "limit": 20000, "offset": 0 }
+  },
+  "data": [...]
+}
+```
+
+No other endpoint paginates — their `meta.pagination` is always `null`.
+
+To pull a full result set, page while `offset + limit < total`, incrementing `offset` by `limit` each request. Pin `datetime_from`/`datetime_to` to absolute ISO timestamps first: the `now-30d`/`now` relative defaults re-resolve on every request, so the window — and `total` — would shift underneath a multi-page walk.
+
+<Note>
+  Pagination caps response *size*, not fetch cost or latency. The full range is still fetched and resampled server-side on each cache miss, and the API's 30-second request timeout still bounds how wide a single request's range can be, regardless of resolution or paging. For a multi-month pull, chunk the date range client-side (monthly is reasonable) and page within each chunk.
+</Note>
+
+## Rate limits
+
+Requests are limited per API key: capacity 200, refilled at 120/min (2/sec). A request over the limit returns `429` with a `Retry-After` header giving the exact number of seconds to wait — scripts doing bulk pulls should sleep on that value directly rather than guessing or backing off.
 
 ## Interpolated flag
 
